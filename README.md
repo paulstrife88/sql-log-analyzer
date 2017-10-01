@@ -5,7 +5,6 @@ This is a simple Python script that will connect to a local PostgreSQL database,
 2. Most popular authors by articles' views
 3. Days in which the HTTP invalid request where more that 1% of the daily total
 
-The script will automatically create any of the needed SQL views.
 
 ## Usage
 
