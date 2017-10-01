@@ -1,43 +1,6 @@
 #!/usr/bin/python3
 import psycopg2
 
-"""Create the SQL views needed by this script to succesfully query
-the database"""
-
-
-def create_views():
-    db = psycopg2.connect("dbname=news")
-    c = db.cursor()
-    c.execute("select to_regclass('public.invalid_requests')")
-    if (str(c.fetchall()[0][0]) == "None"):
-        c.execute("create view invalid_requests as select date_trunc('day', \
-            time), status, count(*) as num from log where status like '%404%'\
-             group by status, date_trunc('day', time) order by \
-             date_trunc('day', time);")
-    c.execute("select to_regclass('public.total_requests');")
-    if (str(c.fetchall()[0][0]) == "None"):
-        c.execute("create view total_requests as select date_trunc('day', \
-            time), count(*) as num from log group by date_trunc('day', time) \
-            order by date_trunc('day', time);")
-    c.execute("select to_regclass('public.invalid_req_perc');")
-    if (str(c.fetchall()[0][0]) == "None"):
-        c.execute("create view invalid_req_perc as select round((CAST \
-            (a.num/b.num::float*100 as numeric)), 2) as percentage, \
-            a.date_trunc from invalid_requests as a, total_requests as b \
-            where a.date_trunc = b.date_trunc;")
-    c.execute("select to_regclass('public.hits_by_article');")
-    if (str(c.fetchall()[0][0]) == "None"):
-        c.execute("create view hits_by_article as select path, count(*) as \
-            num from log where path like '/article/%' group by path order by \
-            num desc;")
-    c.execute("select to_regclass('public.hits_by_title');")
-    if (str(c.fetchall()[0][0]) == "None"):
-        c.execute("create view hits_by_title as select title, author, num \
-            from hits_by_article, articles where hits_by_article.path like \
-            '%'||articles.slug order by num desc;")
-    db.commit()
-    db.close()
-
 
 """Get from the database and print to the terminal the days in which
 the invalid requests (e.g. HTTP 404) percentage has been more than 1%
@@ -88,7 +51,6 @@ def get_hits_by_author():
     db.close()
 
 
-create_views()
 get_hits_by_article()
 print("\n")
 get_hits_by_author()
